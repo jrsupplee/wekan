@@ -1,3 +1,15 @@
+BlazeComponent.extendComponent({
+  onRendered() {
+    this.setLanguage(TAPi18n.getLanguage());
+  },
+
+  setLanguage(tag) {
+    const [lang, dialect] = tag.split('-');
+    document.documentElement.lang = lang;
+    document.documentElement.dir = Utils.rtl() ? 'rtl' : 'ltr';
+  },
+}).register('headerUserBar');
+
 Template.headerUserBar.events({
   'click .js-open-header-member-menu': Popup.open('memberMenu'),
   'click .js-change-avatar': Popup.open('changeAvatar'),
@@ -215,6 +227,9 @@ Template.changeLanguagePopup.events({
         'profile.language': this.tag,
       },
     });
+    const [lang, dialect] = this.tag.split('-');
+    document.documentElement.lang = lang;
+    document.documentElement.dir = Utils.rtl() ? 'rtl' : 'ltr';
     event.preventDefault();
   },
 });

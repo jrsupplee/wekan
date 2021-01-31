@@ -68,7 +68,7 @@
     display: none
 
   .list-header-name
-    display: inline
+    display: inline-block
     font-size: 16px
     line-height: 17px
     margin: 0
@@ -105,6 +105,25 @@
 .list-header .list-header-plus-icon, .js-open-list-menu, .list-header-menu a
     color #4d4d4d
     padding-left 4px
+
+html[dir='rtl']
+  .list-header
+    .list-header-watch-icon
+      padding-left: inherit
+      padding-right: 10px
+
+    .list-header-menu
+      //padding: 19px 27px
+      left: 3px
+      right: inherit
+
+    .list-header-plus-icon
+      margin-right: inherit
+      margin-left: 5px
+
+    .list-header-plus-icon, .list-header-navicon, .list-header-menu a
+      padding-right: 4px
+      padding-left: 4px
 
 .list-body
   flex: 1 1 auto

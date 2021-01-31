@@ -29,7 +29,7 @@ template(name="listHeader")
             unless currentUser.isCommentOnly
               if canSeeAddCard
                 a.js-add-card.fa.fa-plus.list-header-plus-icon
-              a.fa.fa-navicon.js-open-list-menu
+              a.fa.fa-navicon.js-open-list-menu.list-header-navicon
         else
           a.list-header-menu-icon.fa.fa-angle-right.js-select-list
           a.list-header-handle.handle.fa.fa-arrows.js-list-handle
@@ -42,7 +42,7 @@ template(name="listHeader")
             //  a.fa.js-list-star.list-header-plus-icon(class="fa-star{{#unless starred}}-o{{/unless}}")
             if canSeeAddCard
               a.js-add-card.fa.fa-plus.list-header-plus-icon
-            a.fa.fa-navicon.js-open-list-menu
+            a.fa.fa-navicon.js-open-list-menu.list-header-navicon
           if currentUser.isBoardAdmin
             if showDesktopDragHandles
               a.list-header-handle.handle.fa.fa-arrows.js-list-handle

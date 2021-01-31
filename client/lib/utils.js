@@ -1,6 +1,8 @@
 Utils = {
   rtl() {
     const [lang, dialect] = TAPi18n.getLanguage().split(new RegExp('-'));
+    // eslint-disable-next-line no-console
+    console.log('rtl:', ['ar', 'fa', 'he'].includes(lang));
     return ['ar', 'fa', 'he'].includes(lang);
   },
 

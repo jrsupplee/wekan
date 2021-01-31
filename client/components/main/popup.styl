@@ -125,6 +125,11 @@ $popupWidth = 300px
     .popup-container-depth-{depth}
       transform: translateX(- depth * $popupWidth)
 
+html[dir='rtl']
+  for depth in (1..6)
+    .popup-container-depth-{depth}
+      transform: inherit
+
 .select-members-list,
 .select-avatars-list
   margin-bottom: 8px
@@ -248,6 +253,10 @@ $popupWidth = 300px
         &:hover
           text-decoration: underline
 
+html[dir='rtl']
+  .content-container
+    width: auto
+
 @media screen and (max-width: 800px)
   .pop-over
     width: 100%
@@ -333,3 +342,8 @@ $popupWidth = 300px
     for depth in (1..6)
       .popup-container-depth-{depth}
         transform: translateX(- depth * 10%)
+
+  html[dir='rtl']
+    for depth in (1..6)
+      .popup-container-depth-{depth}
+        transform: inherit
