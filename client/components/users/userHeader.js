@@ -168,6 +168,8 @@ Template.changeLanguagePopup.helpers({
       let name = lang.name;
       if (lang.name === 'br') {
         name = 'Brezhoneg';
+      } else if (name === 'ar-EG') {
+        name = 'العربية المصرية';
       } else if (lang.name === 'ig') {
         name = 'Igbo';
       } else if (lang.name === 'Español') {

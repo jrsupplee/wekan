@@ -1,4 +1,9 @@
 Utils = {
+  rtl() {
+    const [lang, dialect] = TAPi18n.getLanguage().split(new RegExp('-'));
+    return ['ar', 'fa', 'he'].includes(lang);
+  },
+
   setBoardView(view) {
     currentUser = Meteor.user();
     if (currentUser) {
