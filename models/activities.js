@@ -10,6 +10,135 @@
 // revert.
 Activities = new Mongo.Collection('activities');
 
+Activities.attachSchema({
+  userId: {
+    type: String,
+    // optional: false,
+  },
+  activityType: {
+    type: String,
+  },
+  boardId: {
+    type: String,
+  },
+  memberId: {
+    type: String,
+    optional: true,
+  },
+  type: {
+    type: String,
+    optional: true,
+  },
+  activityTypeId: {
+    type: String,
+    optional: true,
+  },
+  title: {
+    type: String,
+    optional: true,
+  },
+  oldBoardId: {
+    type: String,
+    optional: true,
+  },
+  swimlaneId: {
+    type: String,
+    optional: true,
+  },
+  oldSwimlaneId: {
+    type: String,
+    optional: true,
+  },
+  listId: {
+    type: String,
+    optional: true,
+  },
+  oldListId: {
+    type: String,
+    optional: true,
+  },
+  listName: {
+    type: String,
+    optional: true,
+  },
+  cardId: {
+    type: String,
+    optional: true,
+  },
+  commentId: {
+    type: String,
+    optional: true,
+  },
+  attachmentId: {
+    type: String,
+    optional: true,
+  },
+  subtaskId: {
+    type: String,
+    optional: true,
+  },
+  customFieldId: {
+    type: String,
+    optional: true,
+  },
+  customFieldValue: {
+    type: String,
+    optional: true,
+  },
+  checklistId: {
+    type: String,
+    optional: true,
+  },
+  checklistName: {
+    type: String,
+    optional: true,
+  },
+  checklistItemId: {
+    type: String,
+    optional: true,
+  },
+  checklistItemName: {
+    type: String,
+    optional: true,
+  },
+  source: {
+    type: Object,
+    blackbox: true,
+    optional: true,
+  },
+  createdAt: {
+    /**
+     * Creation time of the board
+     */
+    type: Date,
+    // eslint-disable-next-line consistent-return
+    autoValue() {
+      if (this.isInsert) {
+        return new Date();
+      } else if (this.isUpsert) {
+        return { $setOnInsert: new Date() };
+      } else {
+        this.unset();
+      }
+    },
+  },
+  modifiedAt: {
+    /**
+     * Last modification time of the board
+     */
+    type: Date,
+    optional: true,
+    // eslint-disable-next-line consistent-return
+    autoValue() {
+      if (this.isInsert || this.isUpsert || this.isUpdate) {
+        return new Date();
+      } else {
+        this.unset();
+      }
+    },
+  },
+});
+
 Activities.helpers({
   board() {
     return Boards.findOne(this.boardId);
