@@ -11,6 +11,7 @@
 Activities = new Mongo.Collection('activities');
 
 Activities.attachSchema({
+  // Required fields
   userId: {
     type: String,
     // optional: false,
@@ -21,51 +22,13 @@ Activities.attachSchema({
   boardId: {
     type: String,
   },
-  memberId: {
-    type: String,
-    optional: true,
-  },
-  type: {
-    type: String,
-    optional: true,
-  },
+
+  // Optional fields
   activityTypeId: {
     type: String,
     optional: true,
   },
-  title: {
-    type: String,
-    optional: true,
-  },
-  oldBoardId: {
-    type: String,
-    optional: true,
-  },
-  swimlaneId: {
-    type: String,
-    optional: true,
-  },
-  oldSwimlaneId: {
-    type: String,
-    optional: true,
-  },
-  listId: {
-    type: String,
-    optional: true,
-  },
-  oldListId: {
-    type: String,
-    optional: true,
-  },
-  listName: {
-    type: String,
-    optional: true,
-  },
-  cardId: {
-    type: String,
-    optional: true,
-  },
-  commentId: {
+  assigneeId: {
     type: String,
     optional: true,
   },
@@ -73,15 +36,15 @@ Activities.attachSchema({
     type: String,
     optional: true,
   },
-  subtaskId: {
+  boardName: {
     type: String,
     optional: true,
   },
-  customFieldId: {
+  cardId: {
     type: String,
     optional: true,
   },
-  customFieldValue: {
+  cardTitle: {
     type: String,
     optional: true,
   },
@@ -101,9 +64,93 @@ Activities.attachSchema({
     type: String,
     optional: true,
   },
+  commentId: {
+    type: String,
+    optional: true,
+  },
+  customFieldId: {
+    type: String,
+    optional: true,
+  },
+  customFieldValue: {
+    type: String,
+    optional: true,
+  },
+  labelId: {
+    type: String,
+    optional: true,
+  },
+  listId: {
+    type: String,
+    optional: true,
+  },
+  listName: {
+    type: String,
+    optional: true,
+  },
+  memberId: {
+    type: String,
+    optional: true,
+  },
+  oldBoardId: {
+    type: String,
+    optional: true,
+  },
+  oldBoardName: {
+    type: String,
+    optional: true,
+  },
+  oldListId: {
+    type: String,
+    optional: true,
+  },
+  oldSwimlaneId: {
+    type: String,
+    optional: true,
+  },
   source: {
     type: Object,
     blackbox: true,
+    optional: true,
+  },
+  swimlaneId: {
+    type: String,
+    optional: true,
+  },
+  swimlaneName: {
+    type: String,
+    optional: true,
+  },
+  subtaskId: {
+    type: String,
+    optional: true,
+  },
+  timeKey: {
+    type: String,
+    optional: true,
+  },
+  timeOldValue: {
+    type: SimpleSchema.oneOf(String, Date),
+    optional: true,
+  },
+  timeValue: {
+    type: SimpleSchema.oneOf(String, Date),
+    optional: true,
+  },
+  title: {
+    type: String,
+    optional: true,
+  },
+  type: {
+    type: String,
+    optional: true,
+  },
+  username: {
+    type: String,
+    optional: true,
+  },
+  value: {
+    type: String,
     optional: true,
   },
   createdAt: {
