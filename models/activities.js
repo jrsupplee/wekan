@@ -10,6 +10,63 @@
 // revert.
 Activities = new Mongo.Collection('activities');
 
+const entitySubSchema = new SimpleSchema({
+  _id: {
+    type: String,
+  },
+  title: {
+    type: String,
+    optional: true,
+  },
+});
+
+const userSubschema = new SimpleSchema({
+  _id: {
+    type: String,
+  },
+  value: {
+    type: Match.OneOf(String, Number, Date, Boolean),
+    optional: true,
+  },
+});
+
+const customFieldSchema = new SimpleSchema({
+  _id: {
+    type: String,
+  },
+  value: {
+    type: String,
+    optional: true,
+  },
+});
+
+const sourceSchema = new SimpleSchema({
+  id: {
+    type: String,
+  },
+  system: {
+    type: String,
+  },
+  url: {
+    type: String,
+    optional: true,
+  },
+});
+
+const timeSchema = new SimpleSchema({
+  field: {
+    type: String,
+  },
+  value: {
+    type: Date,
+    optional: true,
+  },
+  oldValue: {
+    type: Date,
+    optional: true,
+  },
+});
+
 Activities.attachSchema({
   // Required fields
   userId: {
@@ -24,6 +81,67 @@ Activities.attachSchema({
   },
 
   // Optional fields
+  board: {
+    type: entitySubSchema,
+    optional: true,
+  },
+  oldBoard: {
+    type: entitySubSchema,
+    optional: true,
+  },
+  swimlane: {
+    type: entitySubSchema,
+    optional: true,
+  },
+  oldSwimlane: {
+    type: entitySubSchema,
+    optional: true,
+  },
+  list: {
+    type: entitySubSchema,
+    optional: true,
+  },
+  oldList: {
+    type: entitySubSchema,
+    optional: true,
+  },
+  card: {
+    type: entitySubSchema,
+    optional: true,
+  },
+  checklist: {
+    type: entitySubSchema,
+    optional: true,
+  },
+  checklistItem: {
+    type: entitySubSchema,
+    optional: true,
+  },
+  user: {
+    type: userSubschema,
+    optional: true,
+  },
+  assignee: {
+    type: userSubschema,
+    optional: true,
+  },
+  member: {
+    type: userSubschema,
+    optional: true,
+  },
+  customField: {
+    type: customFieldSchema,
+    optional: true,
+  },
+  source: {
+    type: sourceSchema,
+    optional: true,
+  },
+  time: {
+    type: timeSchema,
+    optional: true,
+  },
+
   activityTypeId: {
     type: String,
     optional: true,
@@ -108,11 +226,6 @@ Activities.attachSchema({
     type: String,
     optional: true,
   },
-  source: {
-    type: Object,
-    blackbox: true,
-    optional: true,
-  },
   swimlaneId: {
     type: String,
     optional: true,
@@ -130,11 +243,11 @@ Activities.attachSchema({
     optional: true,
   },
   timeOldValue: {
-    type: SimpleSchema.oneOf(String, Date),
+    type: Date,
     optional: true,
   },
   timeValue: {
-    type: SimpleSchema.oneOf(String, Date),
+    type: Date,
     optional: true,
   },
   title: {
@@ -185,6 +298,60 @@ Activities.attachSchema({
     },
   },
 });
+
+class ActivityObject {
+  constructor(activityType, user, board) {
+    this.activityType = activityType;
+    this._setUser('user', user);
+    this._setBoard(board);
+  }
+
+  _setEntity(name, value) {
+    if (!this.hasOwnProperty(name)) {
+      this[name] = {};
+    }
+    if (typeof value === 'string') {
+      this[name]._id = value;
+    } else {
+      this[name]._id = value._id;
+      this[name].title = value.title;
+    }
+  }
+
+  _setUser(name, value) {
+    if (!this.hasOwnProperty(name)) {
+      this[name] = {};
+    }
+    if (typeof value === 'string') {
+      this[name]._id = value;
+    } else {
+      this[name]._id = value._id;
+      this[name].username = value.username;
+    }
+  }
+}
+
+const ActivitiesFactory = {
+  moveCardBoard(user, card, oldCard) {
+    const actObj = new ActivityObject('moveCardBoard', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setEntity('oldBoard', oldCard.board());
+    actObj._setEntity('swimlane', card.swimlane());
+    actObj._setEntity('oldSwimlane', oldCard.swimlane());
+    actObj._setEntity('oldList', oldCard.list());
+    return actObj;
+  },
+  moveCard(user, card, oldCard) {
+    const actObj = new ActivityObject('moveCard', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setEntity('swimlane', card.swimlane());
+    actObj._setEntity('oldSwimlane', oldCard.swimlane());
+    actObj._setEntity('list', card.list());
+    actObj._setEntity('oldList', oldCard.list());
+    return actObj;
+  },
+  archivedCard(user, card) {},
+};
 
 Activities.helpers({
   board() {
@@ -485,6 +652,131 @@ if (Meteor.isServer) {
       });
     }
   });
+
+  Activities.migrateToNewSchema = () => {
+    db.activities.find().forEach(act => {
+      const updates = {};
+
+      const removeFields = [];
+
+      const fieldMapping = {
+        userId: 'user._id',
+        boardId: 'board._id',
+        boardName: 'board.title',
+        oldBoardId: 'oldBoard._id',
+        oldBoardName: 'oldBoard.title',
+        swimlaneId: 'swimlane._id',
+        swimlaneName: 'swimlane.title',
+        oldSwimlaneId: 'oldSwimlane._id',
+        oldSwimlaneName: 'oldSwimlane.title',
+        listId: 'list._id',
+        listName: 'list.title',
+        oldListId: 'oldList._id',
+        oldListName: 'oldList.title',
+        cardId: 'card._id',
+        cardTitle: 'card.title',
+        labelId: 'label._id',
+        customFieldId: 'customField._id',
+        customFieldValue: 'customField.value',
+        value: 'customField.value',
+        checklistId: 'checklist._id',
+        checklistName: 'checklist.title',
+        checklistItemId: 'checklistItem._id',
+        checklistItemName: 'checklistItem.title',
+        attachmentId: 'attachment._id',
+        attachmentName: 'attachment.title',
+        timeKey: 'time.field',
+        timeValue: 'time.value',
+        timeOldValue: 'time.oldValue',
+        commentId: 'comment._id',
+        memberId: 'member._id',
+        assigneeId: 'assignee._id',
+      };
+
+      const conditionals = [
+        {
+          activityTypes: ['joinAssignee', 'unjoinAssignee'],
+          username: 'assignee.username',
+        },
+        {
+          activityTypes: ['joinMember', 'unjoinMember'],
+          username: 'member.username',
+        },
+        {
+          activityTypes: [
+            'duenow',
+            'almostdone',
+            'pastdue',
+            'a-receivedAt',
+            'a-dueAt',
+            'a-endAt',
+          ],
+          username: 'user.username',
+        },
+        {
+          activityTypes: ['createList', 'removeList', 'archivedList'],
+          title: 'list.title',
+        },
+      ];
+
+      Object.entries(fieldMapping, ([field, mapping]) => {
+        if (act[field]) {
+          updates[mapping] = act[field];
+          removeFields.push(field);
+        }
+      });
+
+      conditionals.forEach(condition => {
+        if (condition.activityTypes.includes(act.activityType)) {
+          Object.entries(condition, ([field, mapping]) => {
+            if (field !== 'activityTypes') {
+              updates[mapping] = act[field];
+              removeFields.push(field);
+            }
+          });
+        }
+      });
+
+      if (!updates.hasOwnProperty('time.field')) {
+        switch (act.activityType) {
+          case 'duenow':
+          case 'almostdue':
+          case 'pastdue':
+          case 'a-dueAt':
+            updates['time.field'] = 'dueAt';
+            break;
+          case 'a-receivedAt':
+            updates['time.field'] = 'receivedAt';
+            break;
+          case 'a-startAt':
+            updates['time.field'] = 'startAt';
+            break;
+          case 'a-endAt':
+            updates['time.field'] = 'endAt';
+            break;
+        }
+      }
+
+      ['type', 'activityTypeId'].forEach(field => {
+        if (act[field]) {
+          removeFields.push('field');
+        }
+      });
+
+      const unset = {};
+      removeFields.forEach(field => {
+        unset[field] = 1;
+      });
+
+      Activities.update(
+        { _id: act._id },
+        {
+          $set: updates,
+          $unset: unset,
+        },
+      );
+    });
+  };
 }
 
 export default Activities;
