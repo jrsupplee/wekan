@@ -329,9 +329,27 @@ class ActivityObject {
       this[name].username = value.username;
     }
   }
+
+  _setTime(field, value, oldValue = undefined) {
+    if (!this.time) {
+      this.time = {};
+    }
+    this.time.field = field;
+    this.time.value = value;
+    if (oldValue !== undefined) {
+      this.time.oldValue = oldValue;
+    }
+  }
 }
 
 const ActivitiesFactory = {
+  createCard(user, card) {
+    const actObj = new ActivityObject('createCard', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setEntity('swimlane', card.swimlane());
+    actObj._setEntity('list', card.list());
+    return actObj;
+  },
   moveCardBoard(user, card, oldCard) {
     const actObj = new ActivityObject('moveCardBoard', user, card.board());
     actObj._setEntity('card', card);
@@ -350,7 +368,86 @@ const ActivitiesFactory = {
     actObj._setEntity('oldList', oldCard.list());
     return actObj;
   },
-  archivedCard(user, card) {},
+  archivedCard(user, card) {
+    const actObj = new ActivityObject('archivedCard', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setEntity('swimlane', card.swimlane());
+    actObj._setEntity('list', card.list());
+    return actObj;
+  },
+  restoredCard(user, card) {
+    const actObj = new ActivityObject('restoredCard', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setEntity('swimlane', card.swimlane());
+    actObj._setEntity('list', card.list());
+    return actObj;
+  },
+  joinMember(user, card, member) {
+    const actObj = new ActivityObject('joinMember', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setUser('member', member);
+    // actObj._setEntity('swimlane', card.swimlane());
+    // actObj._setEntity('list', card.list());
+    return actObj;
+  },
+  unjoinMember(user, card, member) {
+    const actObj = new ActivityObject('unjoinMember', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setUser('member', member);
+    // actObj._setEntity('swimlane', card.swimlane());
+    // actObj._setEntity('list', card.list());
+    return actObj;
+  },
+  joinAssignee(user, card, assignee) {
+    const actObj = new ActivityObject('joinAssignee', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setUser('assignee', assignee);
+    return actObj;
+  },
+  unjoinAssignee(user, card, assignee) {
+    const actObj = new ActivityObject('unjoinAssignee', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setUser('assignee', assignee);
+    return actObj;
+  },
+  addedLabel(user, card, label) {
+    const actObj = new ActivityObject('addedLabel', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setEntity('label', label);
+    return actObj;
+  },
+  removedLabel(user, card, label) {
+    const actObj = new ActivityObject('removedLabel', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setEntity('label', label);
+    return actObj;
+  },
+  setCustomField(user, card, customField) {
+    const actObj = new ActivityObject('setCustomField', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setEntity('customField', customField);
+    return actObj;
+  },
+  unsetCustomField(user, card, customField) {
+    const actObj = new ActivityObject('unsetCustomField', user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setEntity('customField', customField);
+    return actObj;
+  },
+  dueCard(activityType, user, card, prevCard) {
+    const actObj = new ActivityObject(activityType, user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setEntity('swimlane', card.swimlane());
+    actObj._setTime('dueAt', card.dueAt, prevCard.dueAt);
+    return actObj;
+  },
+  cardDateChanged(fieldName, user, card, prevCard) {
+    const actObj = new ActivityObject(activityType, user, card.board());
+    actObj._setEntity('card', card);
+    actObj._setEntity('swimlane', card.swimlane());
+    actObj._setTime(fieldName, card[fieldName], prevCard[fieldName]);
+    return actObj;
+  },
 };
 
 Activities.helpers({
