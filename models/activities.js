@@ -67,6 +67,20 @@ const timeSchema = new SimpleSchema({
   },
 });
 
+const labelSchema = new SimpleSchema({
+  _id: {
+    type: String,
+  },
+  color: {
+    type: String,
+    optional: true,
+  },
+  name: {
+    type: String,
+    optional: true,
+  },
+});
+
 Activities.attachSchema({
   // Required fields
   userId: {
@@ -139,6 +153,10 @@ Activities.attachSchema({
   },
   time: {
     type: timeSchema,
+    optional: true,
+  },
+  label: {
+    type: labelSchema,
     optional: true,
   },
 
@@ -307,6 +325,7 @@ class ActivityObject {
   }
 
   _setEntity(name, value) {
+    // eslint-disable-next-line no-prototype-builtins
     if (!this.hasOwnProperty(name)) {
       this[name] = {};
     }
@@ -319,6 +338,7 @@ class ActivityObject {
   }
 
   _setUser(name, value) {
+    // eslint-disable-next-line no-prototype-builtins
     if (!this.hasOwnProperty(name)) {
       this[name] = {};
     }
@@ -340,9 +360,14 @@ class ActivityObject {
       this.time.oldValue = oldValue;
     }
   }
+
+  _setLabel(label) {
+    this.label = _.clone(label);
+  }
 }
 
 const ActivitiesFactory = {
+  // Cards.after.insert
   createCard(user, card) {
     const actObj = new ActivityObject('createCard', user, card.board());
     actObj._setEntity('card', card);
@@ -350,6 +375,7 @@ const ActivitiesFactory = {
     actObj._setEntity('list', card.list());
     return actObj;
   },
+  // Cards.after.update
   moveCardBoard(user, card, oldCard) {
     const actObj = new ActivityObject('moveCardBoard', user, card.board());
     actObj._setEntity('card', card);
@@ -359,6 +385,7 @@ const ActivitiesFactory = {
     actObj._setEntity('oldList', oldCard.list());
     return actObj;
   },
+  // Cards.after.update
   moveCard(user, card, oldCard) {
     const actObj = new ActivityObject('moveCard', user, card.board());
     actObj._setEntity('card', card);
@@ -368,6 +395,7 @@ const ActivitiesFactory = {
     actObj._setEntity('oldList', oldCard.list());
     return actObj;
   },
+  // Cards.after.update
   archivedCard(user, card) {
     const actObj = new ActivityObject('archivedCard', user, card.board());
     actObj._setEntity('card', card);
@@ -375,6 +403,7 @@ const ActivitiesFactory = {
     actObj._setEntity('list', card.list());
     return actObj;
   },
+  // Cards.after.update
   restoredCard(user, card) {
     const actObj = new ActivityObject('restoredCard', user, card.board());
     actObj._setEntity('card', card);
@@ -382,6 +411,7 @@ const ActivitiesFactory = {
     actObj._setEntity('list', card.list());
     return actObj;
   },
+  // Cards.after.update
   joinMember(user, card, member) {
     const actObj = new ActivityObject('joinMember', user, card.board());
     actObj._setEntity('card', card);
@@ -390,6 +420,7 @@ const ActivitiesFactory = {
     // actObj._setEntity('list', card.list());
     return actObj;
   },
+  // Cards.after.update
   unjoinMember(user, card, member) {
     const actObj = new ActivityObject('unjoinMember', user, card.board());
     actObj._setEntity('card', card);
@@ -398,36 +429,42 @@ const ActivitiesFactory = {
     // actObj._setEntity('list', card.list());
     return actObj;
   },
+  // Cards.after.update
   joinAssignee(user, card, assignee) {
     const actObj = new ActivityObject('joinAssignee', user, card.board());
     actObj._setEntity('card', card);
     actObj._setUser('assignee', assignee);
     return actObj;
   },
+  // Cards.after.update
   unjoinAssignee(user, card, assignee) {
     const actObj = new ActivityObject('unjoinAssignee', user, card.board());
     actObj._setEntity('card', card);
     actObj._setUser('assignee', assignee);
     return actObj;
   },
+  // Cards.after.update
   addedLabel(user, card, label) {
     const actObj = new ActivityObject('addedLabel', user, card.board());
     actObj._setEntity('card', card);
     actObj._setEntity('label', label);
     return actObj;
   },
+  // Cards.after.update
   removedLabel(user, card, label) {
     const actObj = new ActivityObject('removedLabel', user, card.board());
     actObj._setEntity('card', card);
     actObj._setEntity('label', label);
     return actObj;
   },
+  // Cards.after.update
   setCustomField(user, card, customField) {
     const actObj = new ActivityObject('setCustomField', user, card.board());
     actObj._setEntity('card', card);
     actObj._setEntity('customField', customField);
     return actObj;
   },
+  // Cards.after.update
   unsetCustomField(user, card, customField) {
     const actObj = new ActivityObject('unsetCustomField', user, card.board());
     actObj._setEntity('card', card);
@@ -442,7 +479,7 @@ const ActivitiesFactory = {
     return actObj;
   },
   cardDateChanged(fieldName, user, card, prevCard) {
-    const actObj = new ActivityObject(activityType, user, card.board());
+    const actObj = new ActivityObject(`a-${fieldName}`, user, card.board());
     actObj._setEntity('card', card);
     actObj._setEntity('swimlane', card.swimlane());
     actObj._setTime(fieldName, card[fieldName], prevCard[fieldName]);
