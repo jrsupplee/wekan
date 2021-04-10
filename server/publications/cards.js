@@ -251,41 +251,59 @@ function buildSelector(queryParams) {
       }
     });
 
-    const queryUsers = {};
-    queryUsers[OPERATOR_ASSIGNEE] = [];
-    queryUsers[OPERATOR_MEMBER] = [];
-    queryUsers[OPERATOR_CREATOR] = [];
-
-    if (queryParams.hasOperator(OPERATOR_USER)) {
-      const users = [];
-      queryParams.getPredicates(OPERATOR_USER).forEach(username => {
-        const user = Users.findOne({ username });
-        if (user) {
-          users.push(user._id);
-        } else {
-          errors.addNotFound(OPERATOR_USER, username);
-        }
-      });
-      if (users.length) {
-        selector.$and.push({
-          $or: [{ members: { $in: users } }, { assignees: { $in: users } }],
+    [
+      OPERATOR_USER,
+      OPERATOR_MEMBER,
+      OPERATOR_ASSIGNEE,
+      OPERATOR_CREATOR,
+    ].forEach(operator => {
+      if (queryParams.hasOperator(operator)) {
+        const include = [];
+        const exclude = [];
+        queryParams.getPredicates(operator).forEach(predicates => {
+          predicates.forEach(predicate => {
+            const user = Users.findOne({ username: predicate.username });
+            if (user) {
+              if (predicate.exclude) {
+                exclude.push(user._id);
+              } else {
+                include.push(user._id);
+              }
+            } else {
+              errors.addNotFound(OPERATOR_USER, predicate.username);
+            }
+          });
         });
-      }
-    }
-
-    [OPERATOR_MEMBER, OPERATOR_ASSIGNEE, OPERATOR_CREATOR].forEach(key => {
-      if (queryParams.hasOperator(key)) {
-        const users = [];
-        queryParams.getPredicates(key).forEach(username => {
-          const user = Users.findOne({ username });
-          if (user) {
-            users.push(user._id);
-          } else {
-            errors.addNotFound(key, username);
+        if (include.length || exclude.length) {
+          function getUserSelector(operator, include, exclude) {
+            return {
+              $and: [
+                ...include.map(user => {
+                  const cond = {};
+                  cond[operator] = user;
+                  return cond;
+                }),
+                ...exclude.map(user => {
+                  const cond = {};
+                  cond[operator] = { $ne: user };
+                  return cond;
+                }),
+              ],
+            };
           }
-        });
-        if (users.length) {
-          selector[key] = { $in: users };
+
+          let userSelector;
+          if (operator === OPERATOR_USER) {
+            userSelector = {
+              $or: [
+                getUserSelector(OPERATOR_MEMBER, include, exclude),
+                getUserSelector(OPERATOR_ASSIGNEE, include, exclude),
+              ],
+            };
+          } else {
+            userSelector = getUserSelector(operator, include, exclude);
+          }
+          selector.$and.push(userSelector);
         }
       }
     });
@@ -598,10 +616,8 @@ function findCards(sessionId, query) {
   // console.log('selector.$and:', query.selector.$and);
   // eslint-disable-next-line no-console
   // console.log('projection:', projection);
-  let cards;
-  // if (!query.hasErrors()) {
-  cards = Cards.find(query.selector, query.projection);
-  // }
+
+  const cards = Cards.find(query.selector, query.projection);
   // eslint-disable-next-line no-console
   // console.log('count:', cards.count());
 

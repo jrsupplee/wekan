@@ -224,7 +224,7 @@ export class Query {
       '^(?<quote>["\'])(?<text>.*?)\\k<quote>(\\s+|$)',
       'u',
     );
-    const reNegatedOperator = new RegExp('^-(?<operator>.*)$');
+    const reNegatedPredicate = new RegExp('^-(?<predicate>.*)$');
 
     const operators = {
       'operator-board': OPERATOR_BOARD,
@@ -331,6 +331,30 @@ export class Query {
               // console.log('found color:', value);
             }
           } else if (
+            [
+              OPERATOR_USER,
+              OPERATOR_MEMBER,
+              OPERATOR_ASSIGNEE,
+              OPERATOR_CREATOR,
+            ].includes(operator)
+          ) {
+            const predicates = [];
+            value.split(RegExp('\\s+')).forEach(username => {
+              const m = username.match(reNegatedPredicate);
+              if (m) {
+                predicates.push({
+                  username: m.groups.predicate,
+                  exclude: true,
+                });
+              } else {
+                predicates.push({
+                  username,
+                  exclude: false,
+                });
+              }
+            });
+            value = predicates;
+          } else if (
             [OPERATOR_DUE, OPERATOR_CREATED_AT, OPERATOR_MODIFIED_AT].includes(
               operator,
             )
@@ -416,9 +440,9 @@ export class Query {
             }
           } else if (operator === OPERATOR_SORT) {
             let negated = false;
-            const m = value.match(reNegatedOperator);
+            const m = value.match(reNegatedPredicate);
             if (m) {
-              value = m.groups.operator;
+              value = m.groups.predicate;
               negated = true;
             }
             if (!predicateTranslations.sorts[value]) {
@@ -445,9 +469,9 @@ export class Query {
             }
           } else if (operator === OPERATOR_HAS) {
             let negated = false;
-            const m = value.match(reNegatedOperator);
+            const m = value.match(reNegatedPredicate);
             if (m) {
-              value = m.groups.operator;
+              value = m.groups.predicate;
               negated = true;
             }
             if (!predicateTranslations.has[value]) {
