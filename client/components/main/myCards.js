@@ -57,7 +57,12 @@ class MyCardsComponent extends CardSearchPagedComponent {
     super.onCreated();
 
     const queryParams = new QueryParams();
-    queryParams.addPredicate(OPERATOR_USER, Meteor.user().username);
+    queryParams.addPredicate(OPERATOR_USER, [
+      {
+        username: Meteor.user().username,
+        exclude: false,
+      },
+    ]);
     queryParams.addPredicate(OPERATOR_SORT, {
       name: PREDICATE_DUE_AT,
       order: ORDER_DESCENDING,

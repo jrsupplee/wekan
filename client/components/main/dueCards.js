@@ -66,10 +66,15 @@ class DueCardsComponent extends CardSearchPagedComponent {
     });
 
     if (Utils.dueCardsView() !== 'all') {
-      queryParams.addPredicate(OPERATOR_USER, Meteor.user().username);
+      queryParams.addPredicate(OPERATOR_USER, [
+        {
+          username: Meteor.user().username,
+          exclude: false,
+        },
+      ]);
     }
 
-    this.runGlobalSearch(queryParams.getQueryParams());
+    this.runGlobalSearch(queryParams);
   }
 
   dueCardsView() {
