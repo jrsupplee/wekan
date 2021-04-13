@@ -991,8 +991,13 @@
   "now-system-messages-of-all-users-are-hidden": "Now system messages of all users are hidden",
   "move-swimlane": "Move Swimlane",
   "moveSwimlanePopup-title": "Move Swimlane",
+  "custom-field-stringtemplate": "String Template",
+  "custom-field-stringtemplate-format": "Format (use %{value} as placeholder)",
+  "custom-field-stringtemplate-separator": "Separator (use &#32; or &nbsp; for a space)",
+  "custom-field-stringtemplate-item-placeholder": "Press enter to add more items",
   "creator": "Creator",
   "filesReportTitle": "Files Report",
   "orphanedFilesReportTitle": "Orphaned Files Report",
-  "reports": "Reports"
+  "reports": "Reports",
+  "rulesReportTitle": "Rules Report"
 }

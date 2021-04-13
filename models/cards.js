@@ -136,9 +136,13 @@ Cards.attachSchema(
           /**
            * value attached to the custom field
            */
-          type: Match.OneOf(String, Number, Boolean, Date),
+          type: Match.OneOf(String, Number, Boolean, Date, [String]),
           optional: true,
           defaultValue: '',
+        },
+        'value.$': {
+          type: String,
+          optional: true,
         },
       }),
     },
@@ -2317,11 +2321,12 @@ if (Meteor.isServer) {
       const card = Cards.findOne(doc._id);
       const list = card.list();
       if (list) {
-        // change list modifiedAt, when user modified the key values in timingaction array, if it's endAt, put the modifiedAt of list back to one year ago for sorting purpose
-        const modifiedAt = new Date(
-          new Date(value).getTime() -
-            (action === 'endAt' ? 365 * 24 * 3600 * 1e3 : 0),
-        ); // set it as 1 year before
+        // change list modifiedAt, when user modified the key values in
+        // timingaction array, if it's endAt, put the modifiedAt of list
+        // back to one year ago for sorting purpose
+        const modifiedAt = moment()
+          .subtract(1, 'year')
+          .toISOString();
         const boardId = list.boardId;
         Lists.direct.update(
           {

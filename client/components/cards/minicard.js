@@ -21,6 +21,22 @@ BlazeComponent.extendComponent({
     }).format(customFieldTrueValue);
   },
 
+  formattedStringtemplateCustomFieldValue(definition) {
+    const customField = this.data()
+      .customFieldsWD()
+      .find(f => f._id === definition._id);
+
+    const customFieldTrueValue =
+      customField && customField.trueValue ? customField.trueValue : [];
+
+    return customFieldTrueValue
+      .filter(value => !!value.trim())
+      .map(value =>
+        definition.settings.stringtemplateFormat.replace(/%\{value\}/gi, value),
+      )
+      .join(definition.settings.stringtemplateSeparator ?? '');
+  },
+
   showCreator() {
     if (this.data().board()) {
       return (
