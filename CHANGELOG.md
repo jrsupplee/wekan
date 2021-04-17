@@ -1,4 +1,36 @@
-# Upcoming Wekan release
+# v5.21 2021-04-16 Wekan release
+
+This release adds the following new features:
+
+- [Summernote Rich Text Editor:
+  1) Add new button to insert a URL link.
+  2) Add new popover allowing you to edit existing URL links.
+  3) Enable spell check.
+  4) Allow client side grammerly extension](https://github.com/wekan/wekan/pull/3720).
+  Thanks to ryanMushy.
+
+and adds the following updates:
+
+- [Upgraded to Meteor 2.2](https://github.com/wekan/wekan/commit/0e7c2b4b94b1c48e8839cfba635b53cdc1a797b1).
+  Thanks to Meteor developers.
+
+and fixes the following bugs:
+
+- [Bugfix, date format not changed to local format](https://github.com/wekan/wekan/pull/3723).
+  Thanks to mfilser.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v5.20 2021-04-14 Wekan release
+
+This release fixes the following bugs:
+
+- [OpenAPI: rework the allowedValues to allow for imported variables](https://github.com/wekan/wekan/pull/3715).
+  Thanks to bentiss.
+
+Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v5.19 2021-04-14 Wekan release
 
 This release adds the following new features:
 
@@ -21,6 +53,8 @@ and adds the following updates:
   Thanks to Node.js developers.
 - [Updated release scripts](https://github.com/wekan/wekan/commit/9871bf196352edcb5475e1b0ee4983e8f312e449).
   Thanks to xet7.
+- [Updated caniuse-lite etc dependencies](https://github.com/wekan/wekan/commit/0857a2ea91f672201ba96f2ba635165784b30fd8).
+  Thanks to developers of dependencies.
 
 and fixes the following bugs:
 
@@ -37,8 +71,14 @@ and fixes the following bugs:
   Use a separate publication for retrieving My Cards.
   Fixed bug with limit and skip projection](https://github.com/wekan/wekan/pull/3708).
   Thanks to jrsupplee.
+- [Popover needs to be destroyed anytime the details panel is closed](https://github.com/wekan/wekan/pull/3712).
+  Thanks to ryanMushy.
 
 Thanks to above GitHub users for their contributions and translators for their translations.
+
+# v5.18 2021-04-14 Wekan release
+
+Not released version, because some version numbers not changed in all release files.
 
 # v5.17 2021-04-01 Wekan release
 
