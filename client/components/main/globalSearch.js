@@ -186,6 +186,8 @@ class GlobalSearchComponent extends CardSearchPagedComponent {
       ['\n* ', 'globalSearch-instructions-notes-2'],
       ['\n* ', 'globalSearch-instructions-notes-3'],
       ['\n* ', 'globalSearch-instructions-notes-3-2'],
+      ['\n* ', 'globalSearch-instructions-notes-3-4'],
+      ['\n* ', 'globalSearch-instructions-notes-3-6'],
       ['\n* ', 'globalSearch-instructions-notes-4'],
       ['\n* ', 'globalSearch-instructions-notes-5'],
     ].forEach(([prefix, instruction]) => {

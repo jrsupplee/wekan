@@ -267,10 +267,28 @@ function buildSelector(queryParams) {
       OPERATOR_ASSIGNEE,
       OPERATOR_CREATOR,
     ].forEach(operator => {
+      function getUserSelector(operator, include, exclude) {
+        return {
+          $and: [
+            ...include.map(user => {
+              const cond = {};
+              cond[operator] = user;
+              return cond;
+            }),
+            ...exclude.map(user => {
+              const cond = {};
+              cond[operator] = { $ne: user };
+              return cond;
+            }),
+          ],
+        };
+      }
+
       if (queryParams.hasOperator(operator)) {
-        const include = [];
-        const exclude = [];
+        let userSelector = { $or: [] };
         queryParams.getPredicates(operator).forEach(predicates => {
+          const include = [];
+          const exclude = [];
           predicates.forEach(predicate => {
             const user = Users.findOne({ username: predicate.username });
             if (user) {
@@ -283,38 +301,22 @@ function buildSelector(queryParams) {
               errors.addNotFound(OPERATOR_USER, predicate.username);
             }
           });
+          if (include.length || exclude.length) {
+            if (operator === OPERATOR_USER) {
+              userSelector.$or.push({
+                $or: [
+                  getUserSelector(OPERATOR_MEMBER, include, exclude),
+                  getUserSelector(OPERATOR_ASSIGNEE, include, exclude),
+                ],
+              });
+            } else {
+              userSelector.$or.push(
+                getUserSelector(operator, include, exclude),
+              );
+            }
+            selector.$and.push(userSelector);
+          }
         });
-        if (include.length || exclude.length) {
-          function getUserSelector(operator, include, exclude) {
-            return {
-              $and: [
-                ...include.map(user => {
-                  const cond = {};
-                  cond[operator] = user;
-                  return cond;
-                }),
-                ...exclude.map(user => {
-                  const cond = {};
-                  cond[operator] = { $ne: user };
-                  return cond;
-                }),
-              ],
-            };
-          }
-
-          let userSelector;
-          if (operator === OPERATOR_USER) {
-            userSelector = {
-              $or: [
-                getUserSelector(OPERATOR_MEMBER, include, exclude),
-                getUserSelector(OPERATOR_ASSIGNEE, include, exclude),
-              ],
-            };
-          } else {
-            userSelector = getUserSelector(operator, include, exclude);
-          }
-          selector.$and.push(userSelector);
-        }
       }
     });
 
