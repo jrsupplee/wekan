@@ -6,6 +6,16 @@ Template.resultCard.helpers({
 
 BlazeComponent.extendComponent({
   events() {
-    return [{}];
+    return [
+      {
+        'click .js-open-card'() {
+          // console.log(this.currentData());
+          // console.log('this.data():', this.data());
+          // Session.set('currentBoard', this.currentData().board()._id);
+          Session.set('currentCard', this.currentData()._id);
+          Modal.openWide('cardDetails');
+        },
+      },
+    ];
   },
 }).register('resultCard');

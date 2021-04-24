@@ -1,14 +1,14 @@
 template(name="cardDetails")
   section.card-details.js-card-details: .card-details-canvas
-    .card-details-header(class='{{#if colorClass}}card-details-{{colorClass}}{{/if}}')
+    .card-details-header(class='{{#if card.colorClass}}card-details-{{card.colorClass}}{{/if}}')
       +inlinedForm(classNames="js-card-details-title")
-        +editCardTitleForm
+        +editCardTitleForm(card)
       else
         unless isMiniScreen
           a.fa.fa-times-thin.close-card-details.js-close-card-details
           if currentUser.isBoardMember
             a.fa.fa-navicon.card-details-menu.js-open-card-details-menu
-            input.inline-input(type="text" id="cardURL_copy" value="{{ originRelativeUrl }}")
+            input.inline-input(type="text" id="cardURL_copy" value="{{ card.originRelativeUrl }}")
             a.fa.fa-link.card-copy-button.js-copy-link(
               class="fa-link"
               title="{{_ 'copy-card-link-to-clipboard'}}"
@@ -21,89 +21,89 @@ template(name="cardDetails")
         h2.card-details-title.js-card-title(
           class="{{#if canModifyCard}}js-open-inlined-form is-editable{{/if}}")
             +viewer
-              = getTitle
-            if isWatching
+              = card.getTitle
+            if card.hasWatcher
               i.card-details-watch.fa.fa-eye
         .card-details-path
-          each parentList
+          each card.parentList
             | &nbsp; &gt; &nbsp;
             a.js-parent-card(href=linkForCard) {{title}}
           // else
             {{_ 'top-level-card'}}
-        if isLinkedCard
+        if card.isLinkedCard
           a.linked-card-location.js-go-to-linked-card
             +viewer
-              | {{getBoardTitle}} > {{getTitle}}
+              | {{card.getBoardTitle}} > {{card.getTitle}}
 
-    if getArchived
-      if isLinkedBoard
+    if card.getArchived
+      if card.isLinkedBoard
         p.warning {{_ 'board-archived'}}
       else
         p.warning {{_ 'card-archived'}}
 
     .card-details-items
-      if currentBoard.allowsLabels
+      if card.board.allowsLabels
         .card-details-item.card-details-item-labels
           h3.card-details-item-title
             i.fa.fa-tags
             | {{_ 'labels'}}
           a(class="{{#if canModifyCard}}js-add-labels{{else}}is-disabled{{/if}}" title="{{_ 'card-labels-title'}}")
-            each labels
-              span.card-label(class="card-label-{{color}}" title=name)
+            each label in card.labels
+              span.card-label(class="card-label-{{label.color}}" title=label.name)
                 +viewer
-                  = name
+                  = label.name
           if canModifyCard
             unless currentUser.isWorker
               a.card-label.add-label.js-add-labels(title="{{_ 'card-labels-title'}}")
                 i.fa.fa-plus
 
-      if currentBoard.allowsReceivedDate
+      if card.board.allowsReceivedDate
         hr
         .card-details-item.card-details-item-received
           h3.card-details-item-title
             i.fa.fa-sign-out
             | {{_ 'card-received'}}
-          if getReceived
-            +cardReceivedDate
+          if card.getReceived
+            +cardReceivedDate(card)
           else
             if canModifyCard
               unless currentUser.isWorker
                 a.card-label.add-label.js-received-date
                   i.fa.fa-plus
 
-      if currentBoard.allowsStartDate
+      if card.board.allowsStartDate
         .card-details-item.card-details-item-start
           h3.card-details-item-title
             i.fa.fa-hourglass-start
             | {{_ 'card-start'}}
-          if getStart
-            +cardStartDate
+          if card.getStart
+            +cardStartDate(card)
           else
             if canModifyCard
               unless currentUser.isWorker
                 a.card-label.add-label.js-start-date
                   i.fa.fa-plus
 
-      if currentBoard.allowsDueDate
+      if card.board.allowsDueDate
         .card-details-item.card-details-item-due
           h3.card-details-item-title
             i.fa.fa-sign-in
             | {{_ 'card-due'}}
-          if getDue
-            +cardDueDate
+          if card.getDue
+            +cardDueDate(card)
           else
             if canModifyCard
               unless currentUser.isWorker
                 a.card-label.add-label.js-due-date
                   i.fa.fa-plus
 
-      if currentBoard.allowsEndDate
+      if card.board.allowsEndDate
         .card-details-item.card-details-item-end
           h3.card-details-item-title
             i.fa.fa-hourglass-end
             | {{_ 'card-end'}}
-          if getEnd
-            +cardEndDate
+          if card.getEnd
+            +cardEndDate(card)
           else
             if canModifyCard
               unless currentUser.isWorker
@@ -111,23 +111,23 @@ template(name="cardDetails")
                   i.fa.fa-plus
 
       hr
-      if currentBoard.allowsCreator
+      if card.board.allowsCreator
         .card-details-item.card-details-item-creator
           h3.card-details-item-title
             i.fa.fa-user
             | {{_ 'creator'}}
 
-          +userAvatar(userId=userId noRemove=true)
+          +userAvatar(userId=card.userId noRemove=true)
           | {{! XXX Hack to hide syntaxic coloration /// }}
 
       //.card-details-items
-      if currentBoard.allowsMembers
+      if card.board.allowsMembers
         .card-details-item.card-details-item-members
           h3.card-details-item-title
             i.fa.fa-users
             | {{_ 'members'}}
-          each userId in getMembers
-            +userAvatar(userId=userId cardId=_id)
+          each userId in card.getMembers
+            +userAvatar(userId=userId cardId=card._id)
             | {{! XXX Hack to hide syntaxic coloration /// }}
           if canModifyCard
             unless currentUser.isWorker
@@ -135,13 +135,13 @@ template(name="cardDetails")
                 i.fa.fa-plus
 
       //if assigneeSelected
-      if currentBoard.allowsAssignee
+      if card.board.allowsAssignee
         .card-details-item.card-details-item-assignees
           h3.card-details-item-title
             i.fa.fa-user
             | {{_ 'assignee'}}
-          each userId in getAssignees
-            +userAvatar(userId=userId cardId=_id assignee=true)
+          each userId in card.getAssignees
+            +userAvatar(userId=userId cardId=card._id assignee=true)
             | {{! XXX Hack to hide syntaxic coloration /// }}
           if canModifyCard
             a.assignee.add-assignee.card-details-item-add-button.js-add-assignees(title="{{_ 'assignee'}}")
@@ -152,18 +152,18 @@ template(name="cardDetails")
                 i.fa.fa-plus
 
       //.card-details-items
-      if getSpentTime
+      if card.getSpentTime
         .card-details-item.card-details-item-spent
-          if getIsOvertime
+          if card.getIsOvertime
             h3.card-details-item-title
               | {{_ 'overtime-hours'}}
           else
             h3.card-details-item-title
               | {{_ 'spent-time-hours'}}
-          +cardSpentTime
+          +cardSpentTime(card)
 
       //.card-details-items
-      if currentBoard.allowsRequestedBy
+      if card.board.allowsRequestedBy
         .card-details-item.card-details-item-name
           h3.card-details-item-title
             i.fa.fa-shopping-cart
@@ -171,19 +171,19 @@ template(name="cardDetails")
           if canModifyCard
             unless currentUser.isWorker
               +inlinedForm(classNames="js-card-details-requester")
-                +editCardRequesterForm
+                +editCardRequesterForm(card)
               else
                 a.js-open-inlined-form
-                  if getRequestedBy
+                  if card.getRequestedBy
                     +viewer
-                      = getRequestedBy
+                      = card.getRequestedBy
                   else
                     | {{_ 'add'}}
-          else if getRequestedBy
+          else if card.getRequestedBy
             +viewer
-              = getRequestedBy
+              = card.getRequestedBy
 
-      if currentBoard.allowsAssignedBy
+      if card.board.allowsAssignedBy
         .card-details-item.card-details-item-name
           h3.card-details-item-title
             i.fa.fa-user-plus
@@ -191,109 +191,109 @@ template(name="cardDetails")
           if canModifyCard
             unless currentUser.isWorker
               +inlinedForm(classNames="js-card-details-assigner")
-                +editCardAssignerForm
+                +editCardAssignerForm(card)
               else
                 a.js-open-inlined-form
-                  if getAssignedBy
+                  if card.getAssignedBy
                     +viewer
-                      = getAssignedBy
+                      = card.getAssignedBy
                   else
                     | {{_ 'add'}}
-          else if getRequestedBy
+          else if card.getRequestedBy
             +viewer
-              = getAssignedBy
+              = card.getAssignedBy
 
       //.card-details-items
-      if customFieldsWD
+      if card.customFieldsWD
         hr
-        each customFieldsWD
+        each wd in card.customFieldsWD
           .card-details-item.card-details-item-customfield
             h3.card-details-item-title
               i.fa.fa-list-alt
-              = definition.name
-            +cardCustomField
+              = wd.definition.name
+            +cardCustomField(wd)
 
-    if getVoteQuestion
+    if card.getVoteQuestion
       hr
       .vote-title
         div.flex
           h3
             i.fa.fa-thumbs-up
             | {{_ 'vote-question'}}
-          if getVoteEnd
-            +voteEndDate
+          if card.getVoteEnd
+            +voteEndDate(card)
         .vote-result
-          if votePublic
+          if card.votePublic
             a.card-label.card-label-green.js-show-positive-votes {{ voteCountPositive }}
             a.card-label.card-label-red.js-show-negative-votes {{ voteCountNegative }}
           else
             .card-label.card-label-green {{ voteCountPositive }}
             .card-label.card-label-red {{ voteCountNegative }}
-          unless ($and currentBoard.isPublic voteAllowNonBoardMembers )
+          unless ($and card.board.isPublic card.voteAllowNonBoardMembers )
             .card-label.card-label-gray  {{ voteCount }} {{_ 'r-of' }} {{ currentBoard.activeMembers.length }}
       +viewer
-        = getVoteQuestion
+        = card.getVoteQuestion
       if showVotingButtons
-        button.card-details-green.js-vote.js-vote-positive(class="{{#if voteState}}voted{{/if}}")
-          if voteState
+        button.card-details-green.js-vote.js-vote-positive(class="{{#if card.voteState}}voted{{/if}}")
+          if card.voteState
             i.fa.fa-thumbs-up
           | {{_ 'vote-for-it'}}
-        button.card-details-red.js-vote.js-vote-negative(class="{{#if $eq voteState false}}voted{{/if}}")
-          if $eq voteState false
+        button.card-details-red.js-vote.js-vote-negative(class="{{#if $eq card.voteState false}}voted{{/if}}")
+          if $eq card.voteState false
             i.fa.fa-thumbs-down
           | {{_ 'vote-against'}}
 
     //- XXX We should use "editable" to avoid repetiting ourselves
     if canModifyCard
       unless currentUser.isWorker
-        if currentBoard.allowsDescriptionTitle
+        if card.board.allowsDescriptionTitle
           hr
           h3.card-details-item-title
             i.fa.fa-align-left
             | {{_ 'description'}}
-        if currentBoard.allowsDescriptionText
+        if card.board.allowsDescriptionText
           +inlinedCardDescription(classNames="card-description js-card-description")
-            +descriptionForm
+            +descriptionForm(card)
             .edit-controls.clearfix
               button.primary(type="submit") {{_ 'save'}}
               a.fa.fa-times-thin.js-close-inlined-form
           else
-            if currentBoard.allowsDescriptionText
+            if card.board.allowsDescriptionText
               a.js-open-inlined-form
-                if getDescription
+                if card.getDescription
                   +viewer
-                    = getDescription
+                    = card.getDescription
                 else
                   | {{_ 'edit'}}
-              if (hasUnsavedValue 'cardDescription' _id)
+              if (hasUnsavedValue 'cardDescription' card._id)
                 p.quiet
                   | {{_ 'unsaved-description'}}
                   a.js-open-inlined-form {{_ 'view-it'}}
                   = ' - '
                   a.js-close-inlined-form {{_ 'discard'}}
-    else if getDescription
-      if currentBoard.allowsDescriptionTitle
+    else if card.getDescription
+      if card.board.allowsDescriptionTitle
         hr
         h3.card-details-item-title {{_ 'description'}}
-      if currentBoard.allowsDescriptionText
+      if card.board.allowsDescriptionText
         +viewer
-          = getDescription
+          = card.getDescription
 
     .card-checklist-attachmentGalerys
       .card-checklist-attachmentGalery.card-checklists
-        if currentBoard.allowsChecklists
+        if card.board.allowsChecklists
           hr
-          +checklists(cardId = _id)
-        if currentBoard.allowsSubtasks
+          +checklists(cardId = card._id)
+        if card.board.allowsSubtasks
           hr
-          +subtasks(cardId = _id)
-      if currentBoard.allowsAttachments
+          +subtasks(cardId = card._id)
+      if card.board.allowsAttachments
         hr
         h3.card-details-item-title
           i.fa.fa-paperclip
           | {{_ 'attachments'}}
         .card-checklist-attachmentGalery.card-attachmentGalery
-          +attachmentsGalery
+          +attachmentsGalery(card)
 
     hr
     unless currentUser.isNoComments
@@ -304,23 +304,23 @@ template(name="cardDetails")
         if currentUser.isBoardMember
           .material-toggle-switch
             span.toggle-switch-title {{_ 'hide-system-messages'}}
-            if hiddenSystemMessages
+            if card.hiddenSystemMessages
               input.toggle-switch(type="checkbox" id="toggleButton" checked="checked")
             else
               input.toggle-switch(type="checkbox" id="toggleButton")
             label.toggle-label(for="toggleButton")
-    if currentBoard.allowsComments
+    if card.board.allowsComments
       if currentUser.isBoardMember
         unless currentUser.isNoComments
-          +commentForm
+          +commentForm(card)
     unless currentUser.isNoComments
       if isLoaded.get
-        if isLinkedCard
-          +activities(card=this mode="linkedcard")
-        else if isLinkedBoard
-          +activities(card=this mode="linkedboard")
+        if card.isLinkedCard
+          +activities(card=card mode="linkedcard")
+        else if card.isLinkedBoard
+          +activities(card=card mode="linkedboard")
         else
-          +activities(card=this mode="card")
+          +activities(card=card mode="card")
 
 template(name="editCardTitleForm")
   textarea.js-edit-card-title(rows='1' autofocus dir="auto")
@@ -444,7 +444,7 @@ template(name="boardsAndLists")
     label {{_ 'boards'}}:
     select.js-select-boards(autofocus)
       each boards
-        if $eq _id currentBoard._id
+        if $eq _id board._id
           option(value="{{_id}}" selected) {{_ 'current'}}
         else
           option(value="{{_id}}") {{title}}
@@ -467,10 +467,10 @@ template(name="cardMembersPopup")
     each board.activeMembers
       li.item(class="{{#if isCardMember}}active{{/if}}")
         a.name.js-select-member(href="#")
-          +userAvatar(userId=user._id)
+          +userAvatar(userId=currentUser._id)
           span.full-name
-            = user.profile.fullname
-            | (<span class="username">{{ user.username }}</span>)
+            = currentUser.profile.fullname
+            | (<span class="username">{{ currentUser.username }}</span>)
           if isCardMember
             i.fa.fa-check
 
@@ -480,10 +480,10 @@ template(name="cardAssigneesPopup")
       each board.activeMembers
         li.item(class="{{#if isCardAssignee}}active{{/if}}")
           a.name.js-select-assignee(href="#")
-            +userAvatar(userId=user._id)
+            +userAvatar(userId=currentUser._id)
             span.full-name
-              = user.profile.fullname
-              | (<span class="username">{{ user.username }}</span>)
+              = currentUser.profile.fullname
+              | (<span class="username">{{ currentUser.username }}</span>)
             if isCardAssignee
               i.fa.fa-check
   if currentUser.isWorker
@@ -500,17 +500,17 @@ template(name="cardAssigneesPopup")
 template(name="cardAssigneePopup")
   .board-assignee-menu
     .mini-profile-info
-      +userAvatar(userId=user._id showEdit=true)
+      +userAvatar(userId=currentUser._id showEdit=true)
       .info
-        h3= user.profile.fullname
-        p.quiet @{{ user.username }}
+        h3= currentUser.profile.fullname
+        p.quiet @{{ currentUser.username }}
     ul.pop-over-list
       if currentUser.isNotCommentOnly
         unless currentUser.isWorker
           li: a.js-remove-assignee {{_ 'remove-member-from-card'}}
 
       unless currentUser.isWorker
-        if $eq currentUser._id user._id
+        if $eq currentUser._id currentUser._id
           with currentUser
             li: a.js-edit-profile {{_ 'edit-profile'}}
 

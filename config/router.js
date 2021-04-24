@@ -120,6 +120,10 @@ FlowRouter.route('/my-cards', {
   name: 'my-cards',
   triggersEnter: [AccountsTemplates.ensureSignedIn],
   action() {
+    Session.set('currentBoard', null);
+    Session.set('currentList', null);
+    Session.set('currentCard', null);
+
     Filter.reset();
     Session.set('sortBy', '');
     // EscapeActions.executeAll();
@@ -140,6 +144,10 @@ FlowRouter.route('/due-cards', {
   name: 'due-cards',
   triggersEnter: [AccountsTemplates.ensureSignedIn],
   action() {
+    Session.set('currentBoard', null);
+    Session.set('currentList', null);
+    Session.set('currentCard', null);
+
     Filter.reset();
     Session.set('sortBy', '');
     // EscapeActions.executeAll();
@@ -160,6 +168,10 @@ FlowRouter.route('/global-search', {
   name: 'global-search',
   triggersEnter: [AccountsTemplates.ensureSignedIn],
   action() {
+    Session.set('currentBoard', null);
+    Session.set('currentList', null);
+    Session.set('currentCard', null);
+
     Filter.reset();
     Session.set('sortBy', '');
     // EscapeActions.executeAll();

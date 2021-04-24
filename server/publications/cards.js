@@ -699,11 +699,40 @@ function findCards(sessionId, query) {
       type: 1,
     };
 
+    const allowsFields = {
+      allowsSubtasks: 1,
+      allowsAttachments: 1,
+      allowsChecklists: 1,
+      allowsComments: 1,
+      allowsDescriptionTitle: 1,
+      allowsDescriptionText: 1,
+      allowsActivities: 1,
+      allowsLabels: 1,
+      allowsCreator: 1,
+      allowsAssignee: 1,
+      allowsMembers: 1,
+      allowsRequestedBy: 1,
+      allowsAssignedBy: 1,
+      allowsReceivedDate: 1,
+      allowsStartDate: 1,
+      allowsEndDate: 1,
+      allowsDueDate: 1,
+    };
+
     return [
       cards,
       Boards.find(
         { _id: { $in: boards } },
-        { fields: { ...fields, labels: 1, color: 1 } },
+        {
+          fields: {
+            ...fields,
+            labels: 1,
+            color: 1,
+            isPublic: 1,
+            members: 1,
+            ...allowsFields,
+          },
+        },
       ),
       Swimlanes.find(
         { _id: { $in: swimlanes } },

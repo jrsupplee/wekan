@@ -62,6 +62,10 @@ const complexWatchable = collection => {
       return _.findWhere(this.watchers, { userId });
     },
 
+    hasWatcher() {
+      return this.findWatcher(Meteor.userId());
+    },
+
     getWatchLevel(userId) {
       const watcher = this.findWatcher(userId);
       return watcher ? watcher.level : complexWatchDefault;

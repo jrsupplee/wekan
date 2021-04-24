@@ -14,6 +14,17 @@ const subManager = new SubsManager();
 const { calculateIndexData } = Utils;
 
 BlazeComponent.extendComponent({
+  _card: null,
+  modalDisplay: false,
+
+  card() {
+    return this._card;
+  },
+
+  user() {
+    return Meteor.user();
+  },
+
   mixins() {
     return [Mixins.InfiniteScrolling];
   },
@@ -32,22 +43,32 @@ BlazeComponent.extendComponent({
   },
 
   onCreated() {
-    this.currentBoard = Boards.findOne(Session.get('currentBoard'));
     this.isLoaded = new ReactiveVar(false);
-    const boardBody = this.parentComponent().parentComponent();
-    //in Miniview parent is Board, not BoardBody.
-    if (boardBody !== null) {
-      boardBody.showOverlay.set(true);
-      boardBody.mouseHasEnterCardDetails = false;
+    this.modalDisplay = !!Session.get('currentCard');
+    if (this.modalDisplay) {
+      this._card = Cards.findOne(Session.get('currentCard'));
+      Session.set('currentBoard', this.card().board()._id);
+    } else if (Session.get('currentBoard')) {
+      this._card = this.currentData();
+      this.currentBoard = Boards.findOne(Session.get('currentBoard'));
+      const boardBody = this.parentComponent().parentComponent();
+      //in Miniview parent is Board, not BoardBody.
+      if (boardBody !== null) {
+        boardBody.showOverlay.set(true);
+        boardBody.mouseHasEnterCardDetails = false;
+      }
+      this.calculateNextPeak();
     }
-    this.calculateNextPeak();
 
+    console.log('this.card:', this.card());
+    console.log('currentData():', this.currentData());
+    // console.log('data():', this.data());
+    // console.log('currentData().content():', this.currentData().content());
     Meteor.subscribe('unsaved-edits');
   },
 
   isWatching() {
-    const card = this.currentData();
-    return card.findWatcher(Meteor.userId());
+    return this.card().findWatcher(Meteor.userId());
   },
 
   hiddenSystemMessages() {
@@ -116,15 +137,14 @@ BlazeComponent.extendComponent({
   },
 
   linkForCard() {
-    const card = this.currentData();
     let result = '#';
-    if (card) {
-      const board = Boards.findOne(card.boardId);
+    if (this.card()) {
+      const board = this.card().board();
       if (board) {
         result = FlowRouter.path('card', {
-          boardId: card.boardId,
+          boardId: this.card().boardId,
           slug: board.slug,
-          cardId: card._id,
+          cardId: this.card()._id,
         });
       }
     }
@@ -132,30 +152,30 @@ BlazeComponent.extendComponent({
   },
 
   showVotingButtons() {
-    const card = this.currentData();
     return (
       (currentUser.isBoardMember() ||
-        (currentUser && card.voteAllowNonBoardMembers())) &&
-      !card.expiredVote()
+        (currentUser && this.card().voteAllowNonBoardMembers())) &&
+      !this.card().expiredVote()
     );
   },
 
   onRendered() {
     if (Meteor.settings.public.CARD_OPENED_WEBHOOK_ENABLED) {
       // Send Webhook but not create Activities records ---
-      const card = this.currentData();
       const userId = Meteor.userId();
       const params = {
         userId,
-        cardId: card._id,
-        boardId: card.boardId,
-        listId: card.listId,
+        cardId: this.card()._id,
+        boardId: this.card().boardId,
+        listId: this.card().listId,
         user: Meteor.user().username,
         url: '',
       };
 
       const integrations = Integrations.find({
-        boardId: { $in: [card.boardId, Integrations.Const.GLOBAL_WEBHOOK_ID] },
+        boardId: {
+          $in: [this.card().boardId, Integrations.Const.GLOBAL_WEBHOOK_ID],
+        },
         enabled: true,
         activities: { $in: ['CardDetailsRendered', 'all'] },
       }).fetch();
@@ -272,10 +292,12 @@ BlazeComponent.extendComponent({
   },
 
   onDestroyed() {
-    const parentComponent = this.parentComponent().parentComponent();
-    //on mobile view parent is Board, not board body.
-    if (parentComponent === null) return;
-    parentComponent.showOverlay.set(false);
+    if (!this.modalDisplay) {
+      const parentComponent = this.parentComponent().parentComponent();
+      //on mobile view parent is Board, not board body.
+      if (parentComponent === null) return;
+      parentComponent.showOverlay.set(false);
+    }
   },
 
   events() {
@@ -373,6 +395,9 @@ BlazeComponent.extendComponent({
         'click .js-show-positive-votes': Popup.open('positiveVoteMembers'),
         'click .js-show-negative-votes': Popup.open('negativeVoteMembers'),
         'mouseenter .js-card-details'() {
+          if (!this.parentComponent()) {
+            return;
+          }
           const parentComponent = this.parentComponent().parentComponent();
           //on mobile view parent is Board, not BoardBody.
           if (parentComponent === null) return;
