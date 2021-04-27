@@ -27,9 +27,14 @@ template(name="adminReports")
                 | {{_ 'rulesReportTitle'}}
 
             li
-              a.js-report-cards(data-id="report-cards")
-                i.fa.fa-magic
-                | {{_ 'cardsReportTitle'}}
+              a.js-report-boards(data-id="report-boards" class="{{#if showBoardsReport.get}}active{{/if}}")
+                i.fa.fa-list
+                | {{_ 'boardsReportTitle'}}
+
+            //li
+            //  a.js-report-cards(data-id="report-cards")
+            //    i.fa.fa-magic
+            //    | {{_ 'cardsReportTitle'}}
 
         .main-body
           if loading.get
@@ -44,6 +49,8 @@ template(name="adminReports")
             +rulesReport
           else if showCardsReport.get
             +cardsReport
+          else if showBoardsReport.get
+            +boardsReport
 
 
 template(name="brokenCardsReport")
@@ -137,5 +144,34 @@ template(name="cardsReport")
           td {{abbreviate card.list.title }}
           td {{userNames card.members }}
           td {{userNames card.assignees }}
+  else
+    div {{_ 'no-results' }}
+
+template(name="boardsReport")
+  h1 {{_ 'boardsReportTitle'}}
+  if resultsCount
+    table.table
+      tr
+        th {{_ 'title' }}
+        th {{_ 'type' }}
+        th {{_ 'is-public' }}
+        th Permission
+        th {{_ 'is-archived' }}
+        th {{_ 'members' }}
+        th {{_ 'createdAt' }}
+        th {{_ 'modifiedAt'}}
+        th {{_ 'archivedAt'}}
+
+      each board in results
+        tr
+          td {{abbreviate board.title }}
+          td {{ board.type }}
+          td {{YorN board.public }}
+          td {{ board.permission }}
+          td {{YorN board.archived }}
+          td {{userNames board.members }}
+          td {{dateFormat board.createdAt }}
+          td {{dateFormat board.modifiedAt }}
+          td {{dateFormat board.archivedAt }}
   else
     div {{_ 'no-results' }}

@@ -213,6 +213,48 @@ Meteor.publishRelations('board', function(boardId, isArchived) {
   return this.ready();
 });
 
+Meteor.publish('boardsReport', function() {
+  const userId = this.userId;
+  // Ensure that the user is connected. If it is not, we need to return an empty
+  // array to tell the client to remove the previously published docs.
+  if (!Match.test(userId, String) || !userId) return [];
+
+  // Defensive programming to verify that starredBoards has the expected
+  // format -- since the field is in the `profile` a user can modify it.
+  const { starredBoards = [] } = (Users.findOne(userId) || {}).profile || {};
+  check(starredBoards, [String]);
+
+  const boards = Boards.userBoards(
+    Meteor.userId(),
+    null,
+    {},
+    {
+      fields: {
+        title: 1,
+        type: 1,
+        public: 1,
+        archived: 1,
+        members: 1,
+        createdAt: 1,
+        modifiedAt: 1,
+        archivedAt: 1,
+        permission: 1,
+      },
+    },
+  );
+
+  const userIds = [];
+  boards.forEach(board => {
+    if (board.members) {
+      board.members.forEach(member => {
+        userIds.push(member.userId);
+      });
+    }
+  });
+
+  return [boards, Users.find({ _id: { $in: userIds } })];
+});
+
 Meteor.methods({
   copyBoard(boardId, properties) {
     check(boardId, String);

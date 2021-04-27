@@ -1007,6 +1007,10 @@
   "reports": "Reports",
   "rulesReportTitle": "Rules Report",
   "cardsReportTitle": "Cards Report",
+  "boardsReportTitle": "Boards Report",
   "copy-swimlane": "Copy Swimlane",
-  "copySwimlanePopup-title": "Copy Swimlane"
+  "copySwimlanePopup-title": "Copy Swimlane",
+  "is-public": "Public?",
+  "is-archived": "Archived?",
+  "archivedAt": "Archived at"
 }

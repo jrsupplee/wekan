@@ -11,6 +11,7 @@ BlazeComponent.extendComponent({
   showOrphanedFilesReport: new ReactiveVar(false),
   showRulesReport: new ReactiveVar(false),
   showCardsReport: new ReactiveVar(false),
+  showBoardsReport: new ReactiveVar(false),
   sessionId: null,
 
   onCreated() {
@@ -27,6 +28,7 @@ BlazeComponent.extendComponent({
         'click a.js-report-orphaned-files': this.switchMenu,
         'click a.js-report-rules': this.switchMenu,
         'click a.js-report-cards': this.switchMenu,
+        'click a.js-report-boards': this.switchMenu,
       },
     ];
   },
@@ -38,6 +40,8 @@ BlazeComponent.extendComponent({
       this.showFilesReport.set(false);
       this.showBrokenCardsReport.set(false);
       this.showOrphanedFilesReport.set(false);
+      this.showCardsReport.set(false);
+      this.showBoardsReport.set(false);
       if (this.subscription) {
         this.subscription.stop();
       }
@@ -70,6 +74,11 @@ BlazeComponent.extendComponent({
           this.showRulesReport.set(true);
           this.loading.set(false);
         });
+      } else if ('report-boards' === targetID) {
+        this.subscription = Meteor.subscribe('boardsReport', () => {
+          this.showBoardsReport.set(true);
+          this.loading.set(false);
+        });
       } else if ('report-cards' === targetID) {
         const qp = new QueryParams();
         qp.addPredicate(OPERATOR_LIMIT, 300);
@@ -100,6 +109,28 @@ class AdminReport extends BlazeComponent {
 
   resultsCount() {
     return this.collection.find().count();
+  }
+
+  YorN(value) {
+    return value ? 'Y' : '';
+  }
+
+  dateFormat(date) {
+    if (!date) return '';
+    return moment(date).format();
+  }
+
+  userNames(userIds) {
+    let text = '';
+    userIds.forEach(userId => {
+      if (typeof userId === 'object') {
+        userId = userId.userId;
+      }
+      const user = Users.findOne(userId);
+      text += text ? ', ' : '';
+      text += user.username;
+    });
+    return text;
   }
 
   fileSize(size) {
@@ -151,17 +182,11 @@ class AdminReport extends BlazeComponent {
 
 (class extends AdminReport {
   collection = Cards;
-
-  userNames(userIds) {
-    let text = '';
-    userIds.forEach(userId => {
-      const user = Users.findOne(userId);
-      text += text ? ', ' : '';
-      text += user.username;
-    });
-    return text;
-  }
 }.register('cardsReport'));
+
+(class extends AdminReport {
+  collection = Boards;
+}.register('boardsReport'));
 
 class BrokenCardsComponent extends CardSearchPagedComponent {
   onCreated() {
